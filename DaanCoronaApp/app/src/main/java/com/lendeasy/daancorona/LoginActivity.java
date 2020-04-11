@@ -1,6 +1,5 @@
 package com.lendeasy.daancorona;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -24,6 +23,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -36,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
     Button sendotp,verifyotp;
     String codeSent,code,phoneNumber,url="localhost:3000";
     FirebaseAuth mAuth=FirebaseAuth.getInstance();
-    boolean user;
+    boolean newuser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +59,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 phoneNumber=phone.getText().toString();
-                if(phoneNumber.length()==10)
+//                phoneNumber=phoneNumber.trim();
+                if(phoneNumber.length()==13)
                     new GetOtpTask().execute(phoneNumber);
                 else
                     Toast.makeText(getApplicationContext(),"Invalid phone number",Toast.LENGTH_SHORT).show();
@@ -88,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
                         .build();
 
                 Request request = new Request.Builder()
-                        .url("https://daancorona.pythonanywhere.com/api/mobile/")
+                        .url("http://daancorona.pythonanywhere.com/api/mobile/")
                         .post(formbody)
                         .build();
 
@@ -99,12 +102,12 @@ public class LoginActivity extends AppCompatActivity {
 
                 Log.d("Tag",response.body()+"");
 
-                JSONObject jsonObject=new JSONObject(response.body().string());
-                codeSent= jsonObject.getString("otp");
+//                JSONObject jsonObject=new JSONObject(response.body().string());
+//                codeSent= jsonObject.getString("otp");
 
                 return codeSent;
 
-            } catch (IOException | JSONException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             return null;
@@ -113,11 +116,10 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
 
-            Toast.makeText(getApplicationContext(),"code:"+s,Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(),"code:"+s,Toast.LENGTH_LONG).show();
             super.onPostExecute(s);
 
             otp.setVisibility(View.VISIBLE);
-            otp.setText(s);
             verifyotp.setVisibility(View.VISIBLE);
 
             phone.setVisibility(View.GONE);
@@ -132,7 +134,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... strings) {
 
-            String access,refresh;
+            String access="",refresh="";
 
             final OkHttpClient httpClient = new OkHttpClient();
 
@@ -142,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
                     .build();
 
             Request request = new Request.Builder()
-                    .url("https://daancorona.pythonanywhere.com/api/otp/")
+                    .url("http://daancorona.pythonanywhere.com/api/otp/")
                     .post(formbody)
                     .build();
 
@@ -159,15 +161,15 @@ public class LoginActivity extends AppCompatActivity {
                 access=jsonObject1.getString("access");
                 refresh=jsonObject1.getString("refresh");
 
-                user=jsonObject.getBoolean("newUser");
-
-                return access;
+                newuser=jsonObject.getBoolean("newUser");
+                Log.d("NewUser",newuser+"");
 
             } catch (IOException | JSONException e) {
+                access=null;
                 e.printStackTrace();
             }
 
-            return null;
+            return access;
         }
 
         @Override
@@ -175,16 +177,19 @@ public class LoginActivity extends AppCompatActivity {
 
             super.onPostExecute(s);
 
-            if(s==null)
-                Toast.makeText(LoginActivity.this,"Unsuccessful",Toast.LENGTH_SHORT).show();
+            if(s==null || s.equals("")) {
+                Toast.makeText(LoginActivity.this, "Error!!!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             SharedPreferences sharedPref=getSharedPreferences("User",MODE_PRIVATE);
             SharedPreferences.Editor editor=sharedPref.edit();
             editor.putString("Token",s);
-            editor.commit();
+            editor.apply();
+            Toast.makeText(getApplicationContext(), "Token: "+s, Toast.LENGTH_SHORT).show();
 
-            if(user) {
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
+            if(!newuser) {
+                Intent i = new Intent(LoginActivity.this, InfoActivity.class);
                 i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);
                 finish();
