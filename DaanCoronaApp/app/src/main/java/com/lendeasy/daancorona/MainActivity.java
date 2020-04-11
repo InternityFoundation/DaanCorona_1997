@@ -5,11 +5,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     String nametxt,net,maxcred;
     TextView name,maxcredit,netamt;
     String token;
+    ImageView edit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +51,15 @@ public class MainActivity extends AppCompatActivity {
         name=findViewById(R.id.name);
         maxcredit=findViewById(R.id.target);
         netamt=findViewById(R.id.balance);
+        edit=findViewById(R.id.edit);
 
         recyclerView=findViewById(R.id.recyclerview);
+        edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,EditProfile.class));
+            }
+        });
 
         new SetProfile().execute();
         new SetRecyclerView().execute();
@@ -64,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             final OkHttpClient httpClient = new OkHttpClient();
 
             Request request = new Request.Builder()
-                    .url("http://www.daancorona.pythonanywhere.com/api/recipient_details/")
+                    .url("http://daancorona.pythonanywhere.com/api/recipient_details/")
                     .addHeader("Authorization","JWT "+token)
                     .build();
 
@@ -74,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                     throw new IOException("Unexpected code " + response);
 
                 JSONObject jsonObject=new JSONObject(response.body().string());
-                nametxt=jsonObject.getString("first_name");
+                nametxt=jsonObject.getString("name");
                 net=jsonObject.getString("total_amt");
                 maxcred=jsonObject.getString("max_credit");
 
@@ -109,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             final OkHttpClient httpClient = new OkHttpClient();
 
             Request request = new Request.Builder()
-                    .url("http://www.daancorona.pythonanywhere.com/api/recipient_details/")
+                    .url("http://daancorona.pythonanywhere.com/api/recipient_details/")
                     .addHeader("Authorization", "JWT "+token)
                     .build();
 
@@ -121,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject jsonObject=new JSONObject(response.body().string());
 
                 return jsonObject.getJSONArray("donors");
-
 
             } catch (IOException | JSONException e) {
                 e.printStackTrace();
@@ -142,8 +152,6 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                         list.add(new Item(jsonObject.getString("name"),jsonObject.getString("donor_id"),jsonObject.getString("amount")));
                     }
-
-
 
                     recyclerView.setLayoutManager(new LinearLayoutManager(MainActivity.this));
                     itemAdapter=new ItemAdapter(list,MainActivity.this);

@@ -12,30 +12,34 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.icu.text.IDNA;
-import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import okhttp3.FormBody;
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
@@ -43,29 +47,29 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class InfoActivity extends AppCompatActivity {
+public class EditProfile extends AppCompatActivity {
 
     private static final int MY_GALLERY_REQUEST_CODE =102 ;
     private static final int STORAGE_PERMISSION_CODE = 103;
-    private EditText shop_name,first_name,last_name,shop_type,address,maxcredit,buss_address,upi;
+    private EditText shop_name,first_name,last_name,shop_type,address,maxcredit,buss_address;
     private Button proceed, location;
     private CircleImageView userImageView, shopImage;
     private static final int USER_IMAGE = 100;
     private static final int SHOP_IMAGE = 101;
-    String shopName,firstName,lastName,shopType,latitude,longitude,shopAddress,MaxCredit,BussAddress,Upi;
+    String shopName,firstName,lastName,shopType,latitude,longitude,shopAddress,MaxCredit,BussAddress,profile_img,shop_img;
     double lat,lng;
-    Uri userImageURI, shopImageURI;
-    String token;
+    Uri userImageURI, shopImageURI,dwnloaduser,dwnldshop;
+    String token,shopUrl,userUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_info);
-
+        setContentView(R.layout.activity_edit_profile);
         SharedPreferences sharedPref=getSharedPreferences("User",MODE_PRIVATE);
         token=sharedPref.getString("Token","");
 
         initializeItems();
+
 
         userImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,7 +95,8 @@ public class InfoActivity extends AppCompatActivity {
         location.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(InfoActivity.this, MapActivity.class);
+                Intent intent = new Intent(EditProfile.this, MapActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 finish();
             }
@@ -107,20 +112,18 @@ public class InfoActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 declaration();
+
                 if(firstName.isEmpty() || lastName.isEmpty() || shopName.isEmpty() || shopType.isEmpty() ||
                         latitude.isEmpty() || longitude.isEmpty() || shopAddress.isEmpty() || MaxCredit.isEmpty()
-                        || BussAddress.isEmpty() || Upi.isEmpty() || userImageURI==null || shopImageURI==null)
-                    Toast.makeText(InfoActivity.this,"Enter all details",Toast.LENGTH_SHORT).show();
+                        || BussAddress.isEmpty() || userImageURI==null || shopImageURI==null)
+                    Toast.makeText(EditProfile.this,"Enter all details",Toast.LENGTH_SHORT).show();
                 else
-                    new sendDataTask().execute(firstName,lastName,shopName,shopType,latitude,
-                            longitude,shopAddress,MaxCredit,BussAddress,Upi);
+                    new sendDataTask().execute(firstName,lastName,shopName,shopType,latitude,longitude,shopAddress,MaxCredit,BussAddress);
             }
         });
-
     }
 
     private void initializeItems() {
-
         location = findViewById(R.id.shopLocation);
         first_name = findViewById(R.id.firstname);
         last_name = findViewById(R.id.lastname);
@@ -135,9 +138,28 @@ public class InfoActivity extends AppCompatActivity {
 
         userImageView.setImageResource(R.drawable.ic_launcher_background);
         shopImage.setImageResource(R.drawable.ic_launcher_background);
+
+        new getTask().execute();
+    }
+
+    private void setData(String shopName, String firstName, String lastName, String shopType, String shopAddress, String maxCredit, String bussAddress,String  profile_img,String shop_img) throws MalformedURLException {
+        shop_name.setText(shopName);
+        first_name.setText(firstName);
+        last_name.setText(lastName);
+        shop_type.setText(shopType);
+        address.setText(shopAddress);
+        maxcredit.setText(maxCredit);
+        buss_address.setText(bussAddress);
+
+        Log.d("Img",profile_img);
+
+
+        Glide.with(this).load(userImageURI).into(userImageView);
+        Glide.with(this).load(shopImageURI).into(shopImage);
     }
 
     private void declaration() {
+
         firstName = first_name.getText().toString();
         lastName = last_name.getText().toString();
         shopName = shop_name.getText().toString();
@@ -145,7 +167,6 @@ public class InfoActivity extends AppCompatActivity {
         shopAddress = address.getText().toString();
         MaxCredit=maxcredit.getText().toString();
         BussAddress=buss_address.getText().toString();
-        Upi=upi.getText().toString();
     }
 
     @Override
@@ -161,7 +182,7 @@ public class InfoActivity extends AppCompatActivity {
         }
     }
 
-    class sendDataTask extends AsyncTask<String,Void,String>{
+    class sendDataTask extends AsyncTask<String,Void,String> {
 
         @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
@@ -170,8 +191,9 @@ public class InfoActivity extends AppCompatActivity {
             final OkHttpClient httpClient = new OkHttpClient();
 
             final MediaType MEDIA_TYPE_PNG = MediaType.parse("image/jpeg");
+            File user,shop;
             //File path = Environment.getExternalStoragePublicDirectory(
-              //      Environment.DIRECTORY_PICTURES);
+            //      Environment.DIRECTORY_PICTURES);
 
             Log.d("TAG",""+userImageURI);
 
@@ -179,8 +201,9 @@ public class InfoActivity extends AppCompatActivity {
             Log.d("TAG",""+userpath);
             Log.d("TAG",""+shoppath);
 
-            File user = new File(userpath);
-            File shop = new File(shoppath);
+
+            user = new File(userpath);
+            shop = new File(shoppath);
 
             Log.d("TAG",""+user.getName());
 
@@ -204,6 +227,7 @@ public class InfoActivity extends AppCompatActivity {
                     .post(formBody)
                     .build();
 
+
             try (Response response = httpClient.newCall(request).execute()) {
 
                 if (!response.isSuccessful())
@@ -224,15 +248,88 @@ public class InfoActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             if(s!=null) {
-                Toast.makeText(InfoActivity.this,s,Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(InfoActivity.this, MainActivity.class);
+
+                Toast.makeText(EditProfile.this,s,Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(EditProfile.this, MainActivity.class);
                 startActivity(intent);
                 finish();
             }
             else
-                Toast.makeText(InfoActivity.this,"Error",Toast.LENGTH_LONG).show();
+                Toast.makeText(EditProfile.this,"Error",Toast.LENGTH_LONG).show();
         }
     }
+
+    class getTask extends AsyncTask<Void, Void, String> {
+
+        @Override
+        protected String doInBackground(Void... voids) {
+
+            OkHttpClient httpClient = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url("http://daancorona.pythonanywhere.com/api/recipient_profile/")
+                    .addHeader("Authorization","JWT "+token)
+                    .build();
+
+            try (Response response = httpClient.newCall(request).execute()) {
+
+                if (!response.isSuccessful())
+                    throw new IOException("Unexpected code " + response);
+
+                JSONObject jsonObject=new JSONObject(response.body().string());
+
+                shopName=jsonObject.getString("business_name");
+                firstName=jsonObject.getString("first_name");
+                lastName=jsonObject.getString("last_name");
+                shopType=jsonObject.getString("business_type");
+                latitude=jsonObject.getString("lat");
+                longitude=jsonObject.getString("long");
+                shopAddress=jsonObject.getString("address");
+                MaxCredit=jsonObject.getString("max_credit");
+                BussAddress=jsonObject.getString("business_address");
+                profile_img=(String)jsonObject.get("recipient_photo");
+                Log.d("Taggg",jsonObject.get("recipient_photo")+"");
+
+                shop_img=(String)jsonObject.get("business_photo");
+
+                userUrl="http://daancorona.pythonanywhere.com"+profile_img;
+                userImageURI=Uri.parse(userUrl);
+                shopUrl="http://daancorona.pythonanywhere.com"+shop_img;
+                shopImageURI=Uri.parse(shopUrl);
+
+                dwnldshop=shopImageURI;
+                dwnloaduser=userImageURI;
+//
+//                SaveImageFromUrl.saveImage("http://daancorona.pythonanywhere.com"+profile_img , profile_img.substring(profile_img.lastIndexOf('/')));
+//                SaveImageFromUrl.saveImage("http://daancorona.pythonanywhere.com"+shop_img, shop_img.substring(shop_img.lastIndexOf('/')));
+
+                return "Done";
+
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+            }
+
+            return "";
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+
+            super.onPostExecute(s);
+
+            if(s.equals("Done")){
+                try {
+                    setData(shopName,firstName,lastName,shopType,shopAddress,MaxCredit,BussAddress,profile_img,shop_img);
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            }
+            else
+                Toast.makeText(getApplicationContext(),"Error!",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
     public String getPath(Uri uri) {
         String[] projection = {MediaStore.MediaColumns.DATA};
         Cursor cursor = managedQuery(uri, projection, null, null, null);
@@ -246,7 +343,6 @@ public class InfoActivity extends AppCompatActivity {
 
     public void checkPermission(String permission, int requestCode)
     {
-
         // Checking if permission is not granted
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -267,8 +363,8 @@ public class InfoActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults)
     {
         super.onRequestPermissionsResult(requestCode,
-                        permissions,
-                        grantResults);
+                permissions,
+                grantResults);
 
 
         if (requestCode ==  STORAGE_PERMISSION_CODE) {
@@ -287,5 +383,6 @@ public class InfoActivity extends AppCompatActivity {
             }
         }
     }
+
 
 }

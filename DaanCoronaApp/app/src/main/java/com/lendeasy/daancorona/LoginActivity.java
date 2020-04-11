@@ -37,7 +37,6 @@ public class LoginActivity extends AppCompatActivity {
     EditText phone,otp;
     Button sendotp,verifyotp;
     String codeSent,code,phoneNumber,url="localhost:3000";
-    FirebaseAuth mAuth=FirebaseAuth.getInstance();
     boolean newuser;
 
     @Override
@@ -189,13 +188,13 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Token: "+s, Toast.LENGTH_SHORT).show();
 
             if(!newuser) {
-                Intent i = new Intent(LoginActivity.this, InfoActivity.class);
+                Intent i = new Intent(LoginActivity.this, MainActivity.class);
                 i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);
                 finish();
             }
             else{
-                Intent i = new Intent(LoginActivity.this, InfoActivity.class);
+                Intent i = new Intent(LoginActivity.this, PersonalInfoActivity.class);
                 i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);
                 finish();
