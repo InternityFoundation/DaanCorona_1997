@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-import datetime
+from datetime import timedelta
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +25,7 @@ SECRET_KEY = '8f+v*%rori2=fms4h5x6lb7j0ur1q&-t5_%z9ri0dydv9kr#i9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-SMS_DEBUG = True
+SMS_DEBUG = False
 
 ALLOWED_HOSTS = ['locahost','127.0.0.1','daancorona.pythonanywhere.com',]
 
@@ -64,6 +64,8 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
    'AUTH_HEADER_TYPES': ('JWT',),
+   'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+   'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
 

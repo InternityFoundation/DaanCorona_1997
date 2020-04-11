@@ -4,8 +4,9 @@ import smtplib
 
 #SNS Connection
 import boto3
-snsclient = boto3.client('sns')
-snsclient.set_sms_attributes(attributes={'DefaultSMSType':'Transactional'})
+if not settings.SMS_DEBUG:
+    snsclient = boto3.client('sns')
+    snsclient.set_sms_attributes(attributes={'DefaultSMSType':'Transactional'})
 
 
 def get_tokens_for_user(user):
@@ -45,8 +46,8 @@ def send_thanks_email_to_donor(donor_name, donor_email):
 
 
 def send_otp_util(number,otp):
-    response=snsclient.publish(PhoneNumber=number,Message='Your otp for DaanCorona is '+otp)
-    if(response['ResponseMetadata']['HTTPStatusCode']==200):
-        return True
-    
+    if not settings.SMS_DEBUG:
+        response=snsclient.publish(PhoneNumber=number,Message='Your otp for DaanCorona is '+otp)
+        if(response['ResponseMetadata']['HTTPStatusCode']==200):
+            return True
     return False
