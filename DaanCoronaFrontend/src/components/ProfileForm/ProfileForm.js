@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, Input, Button, message } from 'antd';
-import { devURL as URL } from "../../const";
+import { prodURL as URL } from "../../const";
 
 import classes from "./ProfileForm.module.scss";
 

@@ -4,7 +4,7 @@ import { message, Button } from 'antd';
 
 import profile from "../../../assets/profile.svg";
 import profilePic from "../../../assets/profile_pic.svg";
-import { devURL as URL } from "../../../const";
+import { prodURL as URL } from "../../../const";
 import Navbar from "../../Navbar/Navbar";
 import ProfileForm from "../../ProfileForm/ProfileForm";
 

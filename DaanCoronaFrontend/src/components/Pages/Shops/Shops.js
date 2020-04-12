@@ -2,7 +2,7 @@ import React from "react";
 import { Input, message, Button, Modal } from "antd";
 import classes from "./Shops.module.scss";
 import thumbnail from "../../../assets/thumbnail.svg";
-import { devURL as URL, placesAPIKey as key } from "../../../const";
+import { prodURL as URL, placesAPIKey as key } from "../../../const";
 import Navbar from "../../Navbar/Navbar";
 import Razorpay from "../../Razorpay/Razorpay";
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Button, message } from "antd";
-import { devURL as URL } from "../../const";
+import { prodURL as URL } from "../../const";
 import cd from "../../assets/CORONADAAN.png";
 
 const Razorpay = () => {

@@ -1,9 +1,9 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { Form, Input, Button, message } from 'antd';
 import 'antd/dist/antd.css';
 import { MobileOutlined, MessageOutlined } from '@ant-design/icons';
 import classes from "./Form.module.scss";
-import { devURL as URL } from "../../const";
+import { prodURL as URL } from "../../const";
 
 class LoginForm extends React.Component {
   constructor(props){
