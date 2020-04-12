@@ -18,14 +18,15 @@ from main.utils import send_otp_util
 
 
 class CustomUser(AbstractUser):
-    mobile = models.CharField(max_length=15, unique=True)
+    mobile = models.CharField(max_length=15)
 
     def __str__(self):
-        return self.get_full_name()
+        return self.username
 
 
 class Donor(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='donor')
+    donor_photo = models.ImageField(default="default.jpg", upload_to='donor_photos', blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -33,19 +34,30 @@ class Donor(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
+        donor_img = Image.open(self.donor_photo.path)
+
+        if donor_img.height > 400 or donor_img.width > 400:
+            output_size = (400, 400)
+            donor_img.thumbnail(output_size)
+            donor_img.save(self.donor_photo.path)
+
 class Recipient(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='recipient')
-    recipient_photo = models.ImageField(default="default.jpg", upload_to='recipient_photos')
-    business_photo = models.ImageField(default="default.jpg", upload_to='business_photos')
-    address = models.TextField(max_length=1000)
-    business_name = models.CharField(verbose_name = "Business Name", max_length=255)
-    business_type = models.CharField(verbose_name="Business Type", max_length=255)
-    business_address = models.TextField(verbose_name="Business Address", max_length=1000)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    recipient_photo = models.ImageField(default="default.jpg", upload_to='recipient_photos', blank=True)
+    business_photo = models.ImageField(default="default.jpg", upload_to='business_photos', blank=True)
+    address = models.TextField(max_length=1000, blank=True)
+    business_name = models.CharField(verbose_name = "Business Name", max_length=255, blank=True)
+    business_type = models.CharField(verbose_name="Business Type", max_length=255, blank=True)
+    business_address = models.TextField(verbose_name="Business Address", max_length=1000, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     max_credit = models.IntegerField(default=0)
+    credit_till_now = models.IntegerField(default=0)
+    upi = models.CharField(max_length=50, blank=True)
+    account_no = models.CharField(max_length=30, blank=True)
+    ifsc_code = models.CharField(max_length=30, blank=True, )
     
-    def str(self):
+    def __str__(self):
         return self.user.get_full_name()
     
     def save(self, *args, **kwargs):
@@ -71,6 +83,10 @@ class Donation(models.Model):
     donor = models.ForeignKey(Donor, on_delete=models.CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=models.CASCADE, related_name = 'recipient')
     amount = models.IntegerField(default=0)
+    razorpay_order_id = models.CharField(max_length=100)
+    razorpay_payment_id = models.CharField(max_length=100)
+    razorpay_signature = models.CharField(max_length=255)
+    key = models.CharField(max_length=6)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

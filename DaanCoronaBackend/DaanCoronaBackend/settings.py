@@ -25,7 +25,7 @@ SECRET_KEY = '8f+v*%rori2=fms4h5x6lb7j0ur1q&-t5_%z9ri0dydv9kr#i9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-SMS_DEBUG = False
+SMS_DEBUG = True
 
 ALLOWED_HOSTS = ['locahost','127.0.0.1','daancorona.pythonanywhere.com',]
 
@@ -145,6 +145,8 @@ MEDIA_URL = '/media/'
 
 AUTH_USER_MODEL = 'main.CustomUser'
 
-#EMAIL_HOST_USER = 
-#EMAIL_HOST_PASSWORD =
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
 
+RAZORPAY_ID = ""
+RAZORPAY_SECRET = ""
