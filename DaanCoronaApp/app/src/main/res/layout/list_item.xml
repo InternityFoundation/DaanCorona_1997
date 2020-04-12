@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg"
+    android:background="@drawable/black_bg"
     android:layout_margin="8dp"
     android:padding="8dp"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -12,27 +12,22 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:id="@+id/name"
-        android:textColor="#fff"
-        android:textSize="20sp"
+        android:layout_centerHorizontal="true"
+        android:textColor="#000"
+        android:textSize="24sp"
     android:text="Name"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/time"
-        android:textColor="#fff"
-        android:layout_alignParentRight="true"
-        android:textSize="17sp"
-        android:text="Time"/>
+
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/amount"
-        android:textColor="#fff"
-        android:layout_marginTop="8dp"
-        android:layout_centerInParent="true"
+        android:textColor="#000"
+        android:layout_centerHorizontal="true"
         android:layout_below="@id/name"
-        android:textSize="24sp"
+        android:layout_marginTop="8dp"
+        android:textSize="30sp"
+        android:gravity="top"
         android:text="Amount"/>
 
     <TextView
@@ -40,20 +35,20 @@
         android:layout_height="wrap_content"
         android:id="@+id/UiD"
         android:textColor="#fff"
-        android:layout_marginTop="8dp"
-        android:layout_below="@id/amount"
+        android:layout_alignParentRight="true"
+        android:visibility="gone"
         android:textSize="17sp"
         android:text="Uid"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/phonenumber"
-        android:textColor="#fff"
-        android:layout_marginTop="8dp"
-        android:layout_alignParentRight="true"
-        android:layout_below="@id/amount"
-        android:textSize="17sp"
-        android:text="Ph.No."/>
+<Button
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/amount"
+    android:layout_centerHorizontal="true"
+    android:text="Send Thanks"
+    android:id="@+id/thanks"
+    android:layout_marginTop="8dp"
+    android:textColor="@color/colorPrimary"
+    android:background="@drawable/button"/>
 
 </RelativeLayout>

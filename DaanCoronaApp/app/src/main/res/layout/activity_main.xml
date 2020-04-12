@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/app_bg2"
+    android:background="@drawable/bgn"
+    android:id="@+id/swiperefresh_items"
     tools:context=".MainActivity">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -17,14 +21,21 @@
         android:paddingBottom="10dp"
         android:id="@+id/holder"
         android:elevation="5dp"
-        android:background="@drawable/bg">
+        android:background="@drawable/black_bg">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/edit"
+            android:layout_marginRight="8dp"
+            android:layout_alignParentRight="true"
+            android:id="@+id/edit"/>
 
         <TextView
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Name"
-            android:textColor="#fff"
+            android:textColor="#000"
             android:textSize="24sp"
             android:layout_centerHorizontal="true"/>
         <TextView
@@ -33,7 +44,7 @@
             android:layout_height="wrap_content"
             android:text="Max Credit"
             android:layout_below="@+id/name"
-            android:textColor="#fff"
+            android:textColor="#000"
             android:textSize="20sp"
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="17dp"
@@ -44,7 +55,7 @@
             android:layout_height="wrap_content"
             android:text="Net Amount"
             android:layout_below="@+id/name"
-            android:textColor="#fff"
+            android:textColor="#000"
             android:textSize="20sp"
             android:layout_alignParentRight="true"
             android:layout_marginRight="17dp"
@@ -55,7 +66,7 @@
             android:layout_height="wrap_content"
             android:text="0"
             android:layout_below="@+id/tgttext"
-            android:textColor="#fff"
+            android:textColor="#000"
             android:textSize="20sp"
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="17dp"
@@ -66,7 +77,7 @@
             android:layout_height="wrap_content"
             android:text="0"
             android:layout_below="@+id/blctext"
-            android:textColor="#fff"
+            android:textColor="#000"
             android:textSize="20sp"
             android:layout_alignParentRight="true"
             android:layout_marginRight="17dp"
@@ -79,7 +90,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Donations"
-        android:textColor="#fff"
+        android:textColor="#000"
         android:textSize="30sp"
         android:layout_centerHorizontal="true"
         android:layout_below="@+id/holder"/>
@@ -89,12 +100,13 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/text"
         android:id="@+id/recyclerview"
-        android:background="@drawable/bg"
+        android:background="@drawable/black_bg"
         android:elevation="5dp"
         android:padding="4dp"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"/>
+    </RelativeLayout>
 
-</RelativeLayout>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
