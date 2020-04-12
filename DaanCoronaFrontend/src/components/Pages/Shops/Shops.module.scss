@@ -1,5 +1,14 @@
 .selectShop {
     padding: 20px;
+    .shopListItem {
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
+}
+
+.navigation {
+    display: grid;
+    grid-template-columns: 7fr 4fr;
 }
 
 .shops {
@@ -24,6 +33,7 @@
         border-radius: 5px;
 
         img {
+            margin: 0 auto;
             height: 300px;
             object-fit: cover;
             object-position: center center;

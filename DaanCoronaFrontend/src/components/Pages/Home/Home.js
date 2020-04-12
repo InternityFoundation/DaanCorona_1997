@@ -1,12 +1,12 @@
 import React from "react";
 import classes from "./Home.module.scss";
 
-import LoginForm from "../../Form/Form";
+import LoginForm from "../../LoginForm/Form";
 
 import logo from "../../../assets/money.svg";
 import gifts from "../../../assets/gift.svg";
 import select from "../../../assets/select.svg";
-import login from "../../../assets/login.svg"; 
+import login from "../../../assets/login.svg";
 
 class Home extends React.Component {
     render() {

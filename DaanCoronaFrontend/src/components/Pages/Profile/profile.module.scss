@@ -1,0 +1,70 @@
+.profile {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.profileInfo {
+    display: grid;
+    grid-template-rows: 3fr 5fr;
+    padding: 15px 0;
+    align-items: center;
+    background: #4c4c78;
+
+    .profilePic {
+        margin: auto;
+        width: 200px;
+        height: 200px;
+        border-radius: 15px;
+    }
+
+    .userDetails {
+        display: grid;
+        color: rgb(246, 247, 249);
+        text-align: left;
+        margin: 0 auto;
+        h1 {
+            color: #e1e3ea;
+        }
+        h1 > span, p > span {
+            font-weight: bold;
+        }
+        .editBtn {
+            width: 100%;
+        }
+    }
+
+    .formDiv {
+        width: max-content;
+        justify-self: center;
+
+        button {
+            width: 20vw;
+        }
+
+        .goBackBtn {
+            background: #ff4d4f;
+            border-color: #ff4d4f;
+        }
+
+        .goBackBtn:hover {
+            background: #ff7875;
+            border-color: #ff7875;
+        }
+    }
+}
+
+.profileSVG {
+    position: relative;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    img {
+        width: 50vw;
+        height: 400px;
+    }
+}
