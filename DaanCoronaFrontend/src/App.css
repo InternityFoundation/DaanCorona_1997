@@ -1,5 +1,32 @@
+@import '~antd/dist/antd.css';
+
 .App {
   text-align: center;
+}
+
+.ant-modal-body {
+  max-height: 500px;
+  overflow: scroll;
+}
+
+.ant-modal-body .shopListItem {
+  border-bottom: 1px solid #eee;
+  padding: 4px;
+  box-sizing: content-box;
+  transition: 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.ant-modal-body .shopListItem:hover {
+  background-color: #ccc;
+}
+
+.ant-form-item-label > label {
+  color: rgb(246, 247, 249) !important;
+}
+
+.ant-form input[type='file'] {
+  padding: 2px;
 }
 
 .App-logo {

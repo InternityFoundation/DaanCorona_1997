@@ -5,22 +5,22 @@ import './App.css';
 import Home from './components/Pages/Home/Home';
 import Shops from './components/Pages/Shops/Shops';
 import Payment from './components/Pages/Payment/Payment';
+import Profile from './components/Pages/Profile/profile';
 
 class App extends React.Component {
   render() {
     return (
-      // <Router>
         <div className="App">
-          {/* <Switch> */}
-          <Payment />
-            {/* <Route path="/" exact component={Home} /> */}
-            {/* <Route path="/" exact component={Home} />
-            <Route path="/" exact component={Home} /> */}
-          {/* </Switch> */}
+          <Switch>
+            <Route path="/" exact component={Home} />
+            <Route path="/payment" exact component={Payment} />
+            <Route path="/shops" exact component={Shops} />
+            <Route path="/profile" exact component={Profile} />
+            <Route path="/" component={Home} />
+          </Switch>
         </div>
-      // </Router>
     )
   }
 }
 
-export default App;
+export default withRouter(App);
