@@ -1,9 +1,5 @@
 package com.lendeasy.daancorona;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -15,16 +11,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-
-import com.google.firebase.auth.FirebaseAuth;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
 
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
@@ -34,8 +27,11 @@ import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
-    EditText phone,otp;
-    Button sendotp,verifyotp;
+    EditText editTxtPhone, editTxtOtp;
+    Button btnSendotp, btnVerifyOtp;
+    LoadingDialog dialog;
+    OTPDialog otpDialog;
+  //  TextView textOtp,textPhone;
     String codeSent,code,phoneNumber,url="localhost:3000";
     boolean newuser;
 
@@ -44,34 +40,43 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        phone=findViewById(R.id.phone);
-        otp=findViewById(R.id.otp);
+       // textPhone = findViewById(R.id.txt_phone);
+        editTxtPhone =findViewById(R.id.editTxt_phone);
+        btnSendotp = findViewById(R.id.btn_send_otp);
 
-        sendotp=findViewById(R.id.sendotp);
-        verifyotp=findViewById(R.id.verifyotp);
 
-        otp.setVisibility(View.GONE);
-        verifyotp.setVisibility(View.GONE);
+      //  textOtp = findViewById(R.id.txt_otp);
+        editTxtOtp = findViewById(R.id.edit_txt_otp);
+        btnVerifyOtp = findViewById(R.id.btn_verify_otp);
 
-        sendotp.setOnClickListener(new View.OnClickListener() {
+        editTxtOtp.setVisibility(View.GONE);
+        btnVerifyOtp.setVisibility(View.GONE);
+       // textOtp.setVisibility(View.GONE);
+
+        dialog=new LoadingDialog(this);
+
+        btnSendotp.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
 
-                phoneNumber=phone.getText().toString();
-//                phoneNumber=phoneNumber.trim();
-                if(phoneNumber.length()==13)
+
+
+                phoneNumber = "+91" + editTxtPhone.getText().toString().trim();
+                if(phoneNumber.length()==13) {
+                    dialog.startloadingDialog();
                     new GetOtpTask().execute(phoneNumber);
+                }
                 else
                     Toast.makeText(getApplicationContext(),"Invalid phone number",Toast.LENGTH_SHORT).show();
             }
         });
 
-        verifyotp.setOnClickListener(new View.OnClickListener() {
-
+        btnVerifyOtp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                code=otp.getText().toString();
+                dialog.startloadingDialog();
+                code= editTxtOtp.getText().toString();
                     new VerifyOtpTask().execute(phoneNumber,code);
                 //verifySignIn();
             }
@@ -90,7 +95,7 @@ public class LoginActivity extends AppCompatActivity {
                         .build();
 
                 Request request = new Request.Builder()
-                        .url("http://daancorona.pythonanywhere.com/api/mobile/")
+                        .url("http://daancorona.herokuapp.com/api/mobile/")
                         .post(formbody)
                         .build();
 
@@ -98,6 +103,9 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (!response.isSuccessful())
                     throw new IOException("Unexpected code " + response);
+                JSONObject jsonObject=new JSONObject(response.body().string());
+
+                codeSent=jsonObject.getString("otp");
 
                 Log.d("Tag",response.body()+"");
 
@@ -106,7 +114,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 return codeSent;
 
-            } catch (IOException e) {
+            } catch (IOException | JSONException e) {
                 e.printStackTrace();
             }
             return null;
@@ -117,12 +125,24 @@ public class LoginActivity extends AppCompatActivity {
 
             //Toast.makeText(getApplicationContext(),"code:"+s,Toast.LENGTH_LONG).show();
             super.onPostExecute(s);
+            dialog.dismissDialog();
 
-            otp.setVisibility(View.VISIBLE);
-            verifyotp.setVisibility(View.VISIBLE);
+            if(!s.equals(null)){
+                otpDialog=new OTPDialog(s,LoginActivity.this);
+                otpDialog.setCancelable(true);
+                otpDialog.show();
 
-            phone.setVisibility(View.GONE);
-            sendotp.setVisibility(View.GONE);
+            }
+            else
+                Toast.makeText(LoginActivity.this,"Error",Toast.LENGTH_SHORT).show();
+
+            editTxtOtp.setVisibility(View.VISIBLE);
+            btnVerifyOtp.setVisibility(View.VISIBLE);
+           // textOtp.setVisibility(View.VISIBLE);
+            editTxtPhone.setText("");
+            btnSendotp.setVisibility(View.GONE);
+            editTxtPhone.setVisibility(View.GONE);
+           // textPhone.setVisibility(View.GONE);
         }
     }
 
@@ -143,11 +163,11 @@ public class LoginActivity extends AppCompatActivity {
                     .build();
 
             Request request = new Request.Builder()
-                    .url("http://daancorona.pythonanywhere.com/api/otp/")
+                    .url("http://daancorona.herokuapp.com/api/otp/")
                     .post(formbody)
                     .build();
 
-            try (Response response = httpClient.newCall(request).execute()) {
+            try (okhttp3.Response response = httpClient.newCall(request).execute()) {
 
                 if (!response.isSuccessful())
                     throw new IOException("Unexpected code " + response);
@@ -175,6 +195,7 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
 
             super.onPostExecute(s);
+            dialog.dismissDialog();
 
             if(s==null || s.equals("")) {
                 Toast.makeText(LoginActivity.this, "Error!!!", Toast.LENGTH_SHORT).show();
@@ -185,17 +206,34 @@ public class LoginActivity extends AppCompatActivity {
             SharedPreferences.Editor editor=sharedPref.edit();
             editor.putString("Token",s);
             editor.apply();
-            Toast.makeText(getApplicationContext(), "Token: "+s, Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "Token: "+s, Toast.LENGTH_SHORT).show();
 
             if(!newuser) {
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+                Intent i;
+
+                if(!sharedPref.getBoolean("Page1",false))
+                    i=new Intent(LoginActivity.this,PersonalInfoActivity.class);
+                else if(!sharedPref.getBoolean("Page2",false))
+                    i=new Intent(LoginActivity.this,ShopInfoActivity.class);
+                else if(!sharedPref.getBoolean("Page3",false))
+                    i=new Intent(LoginActivity.this,PaymentModeActivity.class);
+                else
+                    i = new Intent(LoginActivity.this, MainActivity.class);
+
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(i);
                 finish();
             }
             else{
+
+                editor.putBoolean("Page1",false);
+                editor.putBoolean("Page2",false);
+                editor.putBoolean("Page3",false);
+                editor.apply();
+
                 Intent i = new Intent(LoginActivity.this, PersonalInfoActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(i);
                 finish();
             }

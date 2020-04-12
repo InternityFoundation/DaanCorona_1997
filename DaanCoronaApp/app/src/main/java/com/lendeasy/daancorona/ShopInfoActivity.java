@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -46,11 +47,13 @@ public class ShopInfoActivity extends AppCompatActivity {
     double lat,lng;
     Uri shopImageURI;
     String token;
+    LoadingDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shop_info);
+//        Toast.makeText(ShopInfoActivity.this,"Enter Shop location first",Toast.LENGTH_LONG).show();
 
         SharedPreferences sharedPref=getSharedPreferences("User",MODE_PRIVATE);
         token=sharedPref.getString("Token","");
@@ -90,9 +93,16 @@ public class ShopInfoActivity extends AppCompatActivity {
                         latitude.isEmpty() || longitude.isEmpty() || MaxCredit.isEmpty()
                         || BussAddress.isEmpty() || shopImageURI==null)
                     Toast.makeText(ShopInfoActivity.this,"Enter all details",Toast.LENGTH_SHORT).show();
-                else
+                else{
+                    dialog.startloadingDialog();
                     new ShopInfoActivity.sendDataTask().execute(shopName,shopType,latitude,
                             longitude,MaxCredit,BussAddress);
+//
+//                    Intent i = new Intent(ShopInfoActivity.this, PaymentModeActivity.class);
+//                    startActivity(i);
+
+                }
+
             }
         });
     }
@@ -108,6 +118,7 @@ public class ShopInfoActivity extends AppCompatActivity {
         buss_address=findViewById(R.id.businessaddress);
 
         shopImage.setImageResource(R.drawable.ic_launcher_background);
+        dialog=new LoadingDialog(this);
     }
 
     private void declaration() {
@@ -148,13 +159,13 @@ public class ShopInfoActivity extends AppCompatActivity {
                     .addFormDataPart("business_type",strings[1])
                     .addFormDataPart("lat",strings[2])
                     .addFormDataPart("long",strings[3])
-                    .addFormDataPart("max_credit",strings[5])
-                    .addFormDataPart("business_address",strings[6])
+                    .addFormDataPart("max_credit",strings[4])
+                    .addFormDataPart("business_address",strings[5])
                     .addFormDataPart("business_photo",shop.getName(),RequestBody.create(MEDIA_TYPE_PNG,shop))
                     .build();
 
             Request request = new Request.Builder()
-                    .url("http://daancorona.pythonanywhere.com/api/recipient_profile/")
+                    .url("http://daancorona.herokuapp.com/api/recipient_profile/")
                     .addHeader("Authorization","JWT "+token)
                     .post(formBody)
                     .build();
@@ -178,8 +189,14 @@ public class ShopInfoActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            dialog.dismissDialog();
             if(s!=null) {
                 Toast.makeText(ShopInfoActivity.this,s,Toast.LENGTH_LONG).show();
+                SharedPreferences sharedPref=getSharedPreferences("User",MODE_PRIVATE);
+                SharedPreferences.Editor editor=sharedPref.edit();
+                editor.putBoolean("Page2",true);
+                editor.apply();
+
                 Intent intent = new Intent(ShopInfoActivity.this, PaymentModeActivity.class);
                 startActivity(intent);
                 finish();

@@ -8,6 +8,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -45,6 +46,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
     String firstName,lastName,shopAddress;
     Uri userImageURI;
     String token;
+    LoadingDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +75,12 @@ public class PersonalInfoActivity extends AppCompatActivity {
                 declaration();
                 if(firstName.isEmpty() || lastName.isEmpty() || userImageURI==null || shopAddress.isEmpty())
                     Toast.makeText(PersonalInfoActivity.this,"Enter all details",Toast.LENGTH_SHORT).show();
-                else
-                    new PersonalInfoActivity.sendDataTask().execute(firstName,lastName,shopAddress);
+                else{
+                    dialog.startloadingDialog();
+                  new PersonalInfoActivity.sendDataTask().execute(firstName,lastName,shopAddress);
+//                    Intent i = new Intent(PersonalInfoActivity.this, ShopInfoActivity.class);
+//                    startActivity(i);
+                }
             }
         });
     }
@@ -88,6 +94,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
         userImageView = findViewById(R.id.user_image);
 
         userImageView.setImageResource(R.drawable.profile_pic);
+        dialog=new LoadingDialog(this);
     }
 
     private void declaration() {
@@ -132,7 +139,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
                     .build();
 
             Request request = new Request.Builder()
-                    .url("http://daancorona.pythonanywhere.com/api/recipient_profile/")
+                    .url("http://daancorona.herokuapp.com/api/recipient_profile/")
                     .addHeader("Authorization","JWT "+token)
                     .post(formBody)
                     .build();
@@ -156,10 +163,19 @@ public class PersonalInfoActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            dialog.dismissDialog();
             if(s!=null) {
                 Toast.makeText(PersonalInfoActivity.this,s,Toast.LENGTH_LONG).show();
+
+                SharedPreferences sharedPref=getSharedPreferences("User",MODE_PRIVATE);
+                SharedPreferences.Editor editor=sharedPref.edit();
+                editor.putBoolean("Page1",true);
+                editor.apply();
+
                 Intent intent = new Intent(PersonalInfoActivity.this, ShopInfoActivity.class);
                 startActivity(intent);
+                Toast.makeText(PersonalInfoActivity.this,"Enter Shop location first",Toast.LENGTH_LONG).show();
+
                 finish();
             }
             else
@@ -173,7 +189,7 @@ public class PersonalInfoActivity extends AppCompatActivity {
         int column_index = cursor
                 .getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
         cursor.moveToFirst();
-        String imagePath = cursor.getString(column_index);
+
 
         return cursor.getString(column_index);
     }

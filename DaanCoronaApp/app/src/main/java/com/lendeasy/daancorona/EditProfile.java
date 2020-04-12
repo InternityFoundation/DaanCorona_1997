@@ -60,6 +60,7 @@ public class EditProfile extends AppCompatActivity {
     double lat,lng;
     Uri userImageURI, shopImageURI,dwnloaduser,dwnldshop;
     String token,shopUrl,userUrl;
+    LoadingDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,8 +118,10 @@ public class EditProfile extends AppCompatActivity {
                         latitude.isEmpty() || longitude.isEmpty() || shopAddress.isEmpty() || MaxCredit.isEmpty()
                         || BussAddress.isEmpty() || userImageURI==null || shopImageURI==null)
                     Toast.makeText(EditProfile.this,"Enter all details",Toast.LENGTH_SHORT).show();
-                else
-                    new sendDataTask().execute(firstName,lastName,shopName,shopType,latitude,longitude,shopAddress,MaxCredit,BussAddress);
+                else {
+                    dialog.startloadingDialog();
+                    new sendDataTask().execute(firstName, lastName, shopName, shopType, latitude, longitude, shopAddress, MaxCredit, BussAddress);
+                }
             }
         });
     }
@@ -138,6 +141,8 @@ public class EditProfile extends AppCompatActivity {
 
         userImageView.setImageResource(R.drawable.ic_launcher_background);
         shopImage.setImageResource(R.drawable.ic_launcher_background);
+        dialog=new LoadingDialog(this);
+        dialog.startloadingDialog();
 
         new getTask().execute();
     }
@@ -190,39 +195,89 @@ public class EditProfile extends AppCompatActivity {
 
             final OkHttpClient httpClient = new OkHttpClient();
 
-            final MediaType MEDIA_TYPE_PNG = MediaType.parse("image/jpeg");
+            final MediaType MEDIA_TYPE_JPEG = MediaType.parse("image/jpeg");
             File user,shop;
+            RequestBody formBody;
             //File path = Environment.getExternalStoragePublicDirectory(
             //      Environment.DIRECTORY_PICTURES);
 
             Log.d("TAG",""+userImageURI);
+            
+            if(dwnloaduser!=userImageURI && dwnldshop!=shopImageURI) {
+                String userpath=getPath(userImageURI),shoppath=getPath(shopImageURI);
+                user = new File(userpath);
+                shop = new File(shoppath);
 
-            String userpath=getPath(userImageURI),shoppath=getPath(shopImageURI);
-            Log.d("TAG",""+userpath);
-            Log.d("TAG",""+shoppath);
+                Log.d("TAG", "" + user.getName());
 
 
-            user = new File(userpath);
-            shop = new File(shoppath);
+                formBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                        .addFormDataPart("first_name", strings[0])
+                        .addFormDataPart("last_name", strings[1])
+                        .addFormDataPart("business_name", strings[2])
+                        .addFormDataPart("business_type", strings[3])
+                        .addFormDataPart("lat", strings[4])
+                        .addFormDataPart("long", strings[5])
+                        .addFormDataPart("address", strings[6])
+                        .addFormDataPart("max_credit", strings[7])
+                        .addFormDataPart("business_address", strings[8])
+                        .addFormDataPart("recipient_photo", user.getName(), RequestBody.create(MEDIA_TYPE_JPEG, user))
+                        .addFormDataPart("business_photo", shop.getName(), RequestBody.create(MEDIA_TYPE_JPEG, shop))
+                        .build();
+            }
+            else if(dwnloaduser!=userImageURI){
 
-            Log.d("TAG",""+user.getName());
+                String userpath=getPath(userImageURI);
+                user = new File(userpath);
 
-            RequestBody formBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                    .addFormDataPart("first_name",strings[0])
-                    .addFormDataPart("last_name",strings[1])
-                    .addFormDataPart("business_name",strings[2])
-                    .addFormDataPart("business_type",strings[3])
-                    .addFormDataPart("lat",strings[4])
-                    .addFormDataPart("long",strings[5])
-                    .addFormDataPart("address",strings[6])
-                    .addFormDataPart("max_credit",strings[7])
-                    .addFormDataPart("business_address",strings[8])
-                    .addFormDataPart("recipient_photo",user.getName(),RequestBody.create(MEDIA_TYPE_PNG,user))
-                    .addFormDataPart("business_photo",shop.getName(),RequestBody.create(MEDIA_TYPE_PNG,shop))
-                    .build();
+                formBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                        .addFormDataPart("first_name", strings[0])
+                        .addFormDataPart("last_name", strings[1])
+                        .addFormDataPart("business_name", strings[2])
+                        .addFormDataPart("business_type", strings[3])
+                        .addFormDataPart("lat", strings[4])
+                        .addFormDataPart("long", strings[5])
+                        .addFormDataPart("address", strings[6])
+                        .addFormDataPart("max_credit", strings[7])
+                        .addFormDataPart("business_address", strings[8])
+                        .addFormDataPart("recipient_photo", user.getName(), RequestBody.create(MEDIA_TYPE_JPEG, user))
+                        .build();
+            }
+            else if(dwnldshop!=shopImageURI){
+
+                String shoppath=getPath(shopImageURI);
+                shop = new File(shoppath);
+
+                formBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                        .addFormDataPart("first_name", strings[0])
+                        .addFormDataPart("last_name", strings[1])
+                        .addFormDataPart("business_name", strings[2])
+                        .addFormDataPart("business_type", strings[3])
+                        .addFormDataPart("lat", strings[4])
+                        .addFormDataPart("long", strings[5])
+                        .addFormDataPart("address", strings[6])
+                        .addFormDataPart("max_credit", strings[7])
+                        .addFormDataPart("business_address", strings[8])
+                        .addFormDataPart("business_photo", shop.getName(), RequestBody.create(MEDIA_TYPE_JPEG, shop))
+                        .build();
+            }
+            else{
+
+                formBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                        .addFormDataPart("first_name", strings[0])
+                        .addFormDataPart("last_name", strings[1])
+                        .addFormDataPart("business_name", strings[2])
+                        .addFormDataPart("business_type", strings[3])
+                        .addFormDataPart("lat", strings[4])
+                        .addFormDataPart("long", strings[5])
+                        .addFormDataPart("address", strings[6])
+                        .addFormDataPart("max_credit", strings[7])
+                        .addFormDataPart("business_address", strings[8])
+                        .build();
+            }
 
             Request request = new Request.Builder()
-                    .url("http://daancorona.pythonanywhere.com/api/recipient_profile/")
+                    .url("http://daancorona.herokuapp.com/api/recipient_profile/")
                     .addHeader("Authorization","JWT "+token)
                     .post(formBody)
                     .build();
@@ -247,10 +302,12 @@ public class EditProfile extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            dialog.dismissDialog();
             if(s!=null) {
 
                 Toast.makeText(EditProfile.this,s,Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(EditProfile.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
             }
@@ -267,7 +324,7 @@ public class EditProfile extends AppCompatActivity {
             OkHttpClient httpClient = new OkHttpClient();
 
             Request request = new Request.Builder()
-                    .url("http://daancorona.pythonanywhere.com/api/recipient_profile/")
+                    .url("http://daancorona.herokuapp.com/api/recipient_profile/")
                     .addHeader("Authorization","JWT "+token)
                     .build();
 
@@ -292,9 +349,9 @@ public class EditProfile extends AppCompatActivity {
 
                 shop_img=(String)jsonObject.get("business_photo");
 
-                userUrl="http://daancorona.pythonanywhere.com"+profile_img;
+                userUrl="http://daancorona.herokuapp.com"+profile_img;
                 userImageURI=Uri.parse(userUrl);
-                shopUrl="http://daancorona.pythonanywhere.com"+shop_img;
+                shopUrl="http://daancorona.herokuapp.com"+shop_img;
                 shopImageURI=Uri.parse(shopUrl);
 
                 dwnldshop=shopImageURI;
@@ -316,6 +373,7 @@ public class EditProfile extends AppCompatActivity {
         protected void onPostExecute(String s) {
 
             super.onPostExecute(s);
+            dialog.dismissDialog();
 
             if(s.equals("Done")){
                 try {
