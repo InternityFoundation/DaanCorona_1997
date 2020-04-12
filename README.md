@@ -1,4 +1,6 @@
 # DaanCorona_1997
+#### Website - http://daancorona.herokuapp.com.
+#### App - https://drive.google.com/file/d/1nzdGZ49lWjrKlN22euUYufqrzGbEJ7b1/view
 
 #### This is the repository for team Daan Corona's sumbission for the internity hackcovid-19 challenge.
 
