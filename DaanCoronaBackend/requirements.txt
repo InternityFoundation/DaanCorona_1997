@@ -4,7 +4,7 @@ django-otp==0.8.1
 django-rest-knox==2.3.0
 django-rest-swagger==2.1.1
 django-templated-mail==1.1.1
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 djangorestframework-simplejwt==4.3.0
 djangorestframework-yaml==1.0.3
 djoser==2.0.3
