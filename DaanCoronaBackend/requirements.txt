@@ -1,5 +1,5 @@
 boto3==1.12.33
-Django==2.2.11
+Django==2.2.27
 django-otp==0.8.1
 django-rest-knox==2.3.0
 django-rest-swagger==2.1.1
